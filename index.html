@@ -20,6 +20,12 @@
         #instructions {
             padding: 20px;
         }
+        #downloadBtn {
+            display: none;
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -31,10 +37,12 @@
         <p>Sāciet, nospiežot taustiņu 'S'.</p>
     </div>
     <canvas id="gameCanvas" width="1000" height="600"></canvas>
+    <button id="downloadBtn">Lejupielādēt rezultātus (CSV)</button>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const downloadBtn = document.getElementById('downloadBtn');
 
         const stimuliPath = 'stimuli/';
         const feedbackImages = {
@@ -43,8 +51,14 @@
             tooslow: 'tooslow.png'
         };
 
-        const trialCount = 10;
-        const trialTimeout = 2000;
+        const stimuliFiles = [
+            "Hs.png", "Ht.png", "Ll.png", "Lo.png", "Lu.png",
+            "Ol.png", "Ou.png", "Sh.png", "Ss.png", "St.png",
+            "Th.png", "Ts.png", "Tt.png", "Ul.png", "Uo.png", "Uu.png"
+        ];
+
+        const trialCount = 30;
+        const trialTimeout = 1500;
         let trialData = [];
         let images = {};
         let feedbackImgs = {};
@@ -53,22 +67,13 @@
         let taskStarted = false;
         let trialStartTime = 0;
         let awaitingKey = true;
+        let trialTimeoutHandle = null;
 
-        const validLetters = ["H", "O", "L", "S", "T", "U"];
-
-        async function loadImages() {
-            const response = await fetch(stimuliPath);
-            const files = await response.text();
-            const parser = new DOMParser();
-            const htmlDoc = parser.parseFromString(files, 'text/html');
-            const links = [...htmlDoc.querySelectorAll('a')];
-            for (let link of links) {
-                const file = link.getAttribute('href');
-                if (file.endsWith('.png') && validLetters.includes(file[0])) {
-                    const name = file.split('.')[0];
-                    images[name] = new Image();
-                    images[name].src = stimuliPath + file;
-                }
+        function loadImages() {
+            for (let file of stimuliFiles) {
+                const name = file.split('.')[0];
+                images[name] = new Image();
+                images[name].src = stimuliPath + file;
             }
 
             for (const [key, file] of Object.entries(feedbackImages)) {
@@ -105,6 +110,7 @@
 
         async function startTask() {
             document.getElementById('instructions').style.display = 'none';
+            downloadBtn.style.display = 'none';
             const keys = Object.keys(images);
             trialData = [...keys, ...keys].slice(0, trialCount);
             shuffle(trialData);
@@ -123,10 +129,11 @@
             displayImage(images[stimulusName]);
             trialStartTime = performance.now();
             awaitingKey = true;
-            setTimeout(async () => {
+            if (trialTimeoutHandle) clearTimeout(trialTimeoutHandle);
+            trialTimeoutHandle = setTimeout(async () => {
                 if (awaitingKey) {
                     awaitingKey = false;
-                    results.push({ global: false, local: false, reaction_time: trialTimeout, correct: false });
+                    results.push({ stimulus: stimulusName, global: false, local: false, reaction_time: trialTimeout, correct: false });
                     await showFeedback('tooslow');
                     currentTrial++;
                     runTrial();
@@ -171,7 +178,23 @@
                 'Nospiediet atstarpes taustiņu, lai sāktu no jauna.'
             ]);
 
-            document.addEventListener('keydown', restartListener);
+            downloadBtn.style.display = 'inline-block';
+        }
+
+        function exportCSV() {
+            let csv = 'stimuls,global,local,reakcijas_laiks_ms,pareizi\n';
+            results.forEach(r => {
+                csv += `${r.stimulus},${r.global},${r.local},${Math.round(r.reaction_time)},${r.correct}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'navon_rezultati.csv');
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function restartListener(e) {
@@ -186,26 +209,25 @@
                 await startTask();
             } else if (taskStarted && awaitingKey && (e.key.toLowerCase() === 'b' || e.key.toLowerCase() === 'n')) {
                 awaitingKey = false;
+                if (trialTimeoutHandle) clearTimeout(trialTimeoutHandle);
                 const rt = performance.now() - trialStartTime;
                 const stimulusName = trialData[currentTrial];
                 const { global, local } = getLevelFlags(stimulusName);
                 const correct = (e.key.toLowerCase() === 'b' && (global || local)) ||
                                 (e.key.toLowerCase() === 'n' && !global && !local);
-                results.push({ global, local, reaction_time: rt, correct });
+                results.push({ stimulus: stimulusName, global, local, reaction_time: rt, correct });
                 await showFeedback(correct ? 'correct' : 'wrong');
                 currentTrial++;
                 runTrial();
             }
         });
 
-        window.onload = async () => {
-            drawTextLines([
-                'Ielādējas attēli...'
-            ]);
-            await loadImages();
-            drawTextLines([
-                'Spiediet "S", lai sāktu.'
-            ]);
+        downloadBtn.addEventListener('click', exportCSV);
+
+        window.onload = () => {
+            drawTextLines(['Ielādējas attēli...']);
+            loadImages();
+            drawTextLines(['Spiediet "S", lai sāktu.']);
         };
     </script>
 </body>
