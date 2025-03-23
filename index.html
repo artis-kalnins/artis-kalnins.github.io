@@ -1,1 +1,212 @@
-hello
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+    <meta charset="UTF-8">
+    <title>Navona tests</title>
+    <style>
+        body {
+            background-color: black;
+            color: yellow;
+            font-family: sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background-color: black;
+        }
+        #instructions {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="instructions">
+        <p>Sveiki! Šis ir Navona tests.</p>
+        <p>Jums jāidentificē, vai uz ekrāna ir redzams burts O vai H (liels vai mazs).</p>
+        <p>Nospiediet 'B', ja uz ekrāna ir burts O vai H.</p>
+        <p>Nospiediet 'N', ja uz ekrāna NAV neviena burta O vai H.</p>
+        <p>Sāciet, nospiežot taustiņu 'S'.</p>
+    </div>
+    <canvas id="gameCanvas" width="1000" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const stimuliPath = 'stimuli/';
+        const feedbackImages = {
+            correct: 'correct.png',
+            wrong: 'wrong.png',
+            tooslow: 'tooslow.png'
+        };
+
+        const trialCount = 10;
+        const trialTimeout = 2000;
+        let trialData = [];
+        let images = {};
+        let feedbackImgs = {};
+        let currentTrial = 0;
+        let results = [];
+        let taskStarted = false;
+        let trialStartTime = 0;
+        let awaitingKey = true;
+
+        const validLetters = ["H", "O", "L", "S", "T", "U"];
+
+        async function loadImages() {
+            const response = await fetch(stimuliPath);
+            const files = await response.text();
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(files, 'text/html');
+            const links = [...htmlDoc.querySelectorAll('a')];
+            for (let link of links) {
+                const file = link.getAttribute('href');
+                if (file.endsWith('.png') && validLetters.includes(file[0])) {
+                    const name = file.split('.')[0];
+                    images[name] = new Image();
+                    images[name].src = stimuliPath + file;
+                }
+            }
+
+            for (const [key, file] of Object.entries(feedbackImages)) {
+                feedbackImgs[key] = new Image();
+                feedbackImgs[key].src = stimuliPath + file;
+            }
+        }
+
+        function displayImage(img) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, (canvas.width - img.width) / 2, (canvas.height - img.height) / 2);
+        }
+
+        function showFeedback(type) {
+            displayImage(feedbackImgs[type]);
+            return new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
+        function drawTextLines(lines) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'yellow';
+            ctx.font = '24px sans-serif';
+            lines.forEach((line, index) => {
+                ctx.fillText(line, canvas.width / 2 - ctx.measureText(line).width / 2, 100 + index * 40);
+            });
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        async function startTask() {
+            document.getElementById('instructions').style.display = 'none';
+            const keys = Object.keys(images);
+            trialData = [...keys, ...keys].slice(0, trialCount);
+            shuffle(trialData);
+            currentTrial = 0;
+            results = [];
+            taskStarted = true;
+            runTrial();
+        }
+
+        async function runTrial() {
+            if (currentTrial >= trialCount) {
+                showResults();
+                return;
+            }
+            const stimulusName = trialData[currentTrial];
+            displayImage(images[stimulusName]);
+            trialStartTime = performance.now();
+            awaitingKey = true;
+            setTimeout(async () => {
+                if (awaitingKey) {
+                    awaitingKey = false;
+                    results.push({ global: false, local: false, reaction_time: trialTimeout, correct: false });
+                    await showFeedback('tooslow');
+                    currentTrial++;
+                    runTrial();
+                }
+            }, trialTimeout);
+        }
+
+        function getLevelFlags(name) {
+            return {
+                global: name.includes('H') || name.includes('O'),
+                local: name.includes('h') || name.includes('o')
+            };
+        }
+
+        function showResults() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let gTimes = [], lTimes = [], nTimes = [];
+            let gErr = 0, lErr = 0, nErr = 0;
+
+            results.forEach(res => {
+                if (res.global) {
+                    gTimes.push(res.reaction_time);
+                    if (!res.correct) gErr++;
+                } else if (res.local) {
+                    lTimes.push(res.reaction_time);
+                    if (!res.correct) lErr++;
+                } else {
+                    nTimes.push(res.reaction_time);
+                    if (!res.correct) nErr++;
+                }
+            });
+
+            function avg(arr) {
+                return arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+            }
+
+            drawTextLines([
+                'Navona testa rezultāti:',
+                `Globāls līmenis: ${avg(gTimes)} ms, ${gErr} kļūdas`,
+                `Lokāls līmenis: ${avg(lTimes)} ms, ${lErr} kļūdas`,
+                `Nav mērķa: ${avg(nTimes)} ms, ${nErr} kļūdas`,
+                'Nospiediet atstarpes taustiņu, lai sāktu no jauna.'
+            ]);
+
+            document.addEventListener('keydown', restartListener);
+        }
+
+        function restartListener(e) {
+            if (e.code === 'Space') {
+                document.removeEventListener('keydown', restartListener);
+                location.reload();
+            }
+        }
+
+        document.addEventListener('keydown', async (e) => {
+            if (!taskStarted && e.key.toLowerCase() === 's') {
+                await startTask();
+            } else if (taskStarted && awaitingKey && (e.key.toLowerCase() === 'b' || e.key.toLowerCase() === 'n')) {
+                awaitingKey = false;
+                const rt = performance.now() - trialStartTime;
+                const stimulusName = trialData[currentTrial];
+                const { global, local } = getLevelFlags(stimulusName);
+                const correct = (e.key.toLowerCase() === 'b' && (global || local)) ||
+                                (e.key.toLowerCase() === 'n' && !global && !local);
+                results.push({ global, local, reaction_time: rt, correct });
+                await showFeedback(correct ? 'correct' : 'wrong');
+                currentTrial++;
+                runTrial();
+            }
+        });
+
+        window.onload = async () => {
+            drawTextLines([
+                'Ielādējas attēli...'
+            ]);
+            await loadImages();
+            drawTextLines([
+                'Spiediet "S", lai sāktu.'
+            ]);
+        };
+    </script>
+</body>
+</html>
