@@ -31,9 +31,9 @@
 <body>
     <div id="instructions">
         <p>Sveiki! Šis ir Navona tests.</p>
-        <p>Jums jāidentificē, vai uz ekrāna ir redzams burts O vai H (liels vai mazs).</p>
-        <p>Nospiediet 'B', ja uz ekrāna ir burts O vai H.</p>
-        <p>Nospiediet 'N', ja uz ekrāna NAV neviena burta O vai H.</p>
+        <p>Jums jāidentificē, vai uz ekrāna ir redzams Trijstūris vai Aplis (liels vai mazs).</p>
+        <p>Nospiediet 'B', ja uz ekrāna ir Trijstūris vai Aplis.</p>
+        <p>Nospiediet 'N', ja uz ekrāna NAV neviena Trijstūra vai Apļa.</p>
         <p>Sāciet, nospiežot taustiņu 'S'.</p>
     </div>
     <canvas id="gameCanvas" width="1000" height="600"></canvas>
@@ -52,11 +52,14 @@
         };
 
         const stimuliFiles = [
-            "At.png", "Kt.png", "Rt.png", "St.png", "Tt.png",
-            
+            "Aa.png", "Ak.png", "Ar.png", "As.png", "At.png",
+            "Ka.png", "Kk.png", "Kr.png", "Ks.png", "Kt.png",
+            "Ra.png", "Rk.png", "Rr.png", "Rs.png", "Rt.png",
+            "Sa.png", "Sk.png", "Sr.png", "Ss.png", "St.png",
+            "Ta.png", "Tk.png", "Tr.png", "Ts.png", "Tt.png"
         ];
 
-        const trialCount = 10;
+        const trialCount = 30;
         const trialTimeout = 1500;
         let trialData = [];
         let images = {};
@@ -142,8 +145,8 @@
 
         function getLevelFlags(name) {
             return {
-                global: name.includes('H') || name.includes('O'),
-                local: name.includes('h') || name.includes('o')
+                global: name.includes('T') || name.includes('A'),
+                local: name.includes('t') || name.includes('a')
             };
         }
 
