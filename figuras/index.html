@@ -6,7 +6,7 @@
     <style>
         body {
             background-color: black;
-            color: yellow;
+            color: white;
             font-family: sans-serif;
             text-align: center;
             margin: 0;
@@ -59,7 +59,7 @@
             "Ta.png", "Tk.png", "Tr.png", "Ts.png", "Tt.png"
         ];
 
-        const trialCount = 30;
+        const trialCount = 10;
         const trialTimeout = 1500;
         let trialData = [];
         let images = {};
@@ -96,7 +96,7 @@
 
         function drawTextLines(lines) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'yellow';
+            ctx.fillStyle = 'white';
             ctx.font = '24px sans-serif';
             lines.forEach((line, index) => {
                 ctx.fillText(line, canvas.width / 2 - ctx.measureText(line).width / 2, 100 + index * 40);
@@ -119,6 +119,7 @@
             currentTrial = 0;
             results = [];
             taskStarted = true;
+            testEnded = false;
             runTrial();
         }
 
@@ -181,6 +182,7 @@
             ]);
 
             downloadBtn.style.display = 'inline-block';
+            testEnded = true;
         }
 
         function exportCSV() {
@@ -209,6 +211,8 @@
         document.addEventListener('keydown', async (e) => {
             if (!taskStarted && e.key.toLowerCase() === 's') {
                 await startTask();
+            } else if (testEnded && e.code === 'Space') {
+                window.location.href = "index.html";
             } else if (taskStarted && awaitingKey && (e.key.toLowerCase() === 'b' || e.key.toLowerCase() === 'n')) {
                 awaitingKey = false;
                 if (trialTimeoutHandle) clearTimeout(trialTimeoutHandle);
