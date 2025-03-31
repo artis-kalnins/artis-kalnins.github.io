@@ -2,7 +2,7 @@
 <html lang="lv">
 <head>
     <meta charset="UTF-8">
-    <title>Navona tests</title>
+    <title>Burti tests</title>
     <style>
         body {
             background-color: black;
@@ -32,8 +32,12 @@
     <div id="instructions">
         <p>Sveiki! Šis ir Navona tests.</p>
         <p>Jums jāidentificē, vai uz ekrāna ir redzams burts O vai H (liels vai mazs).</p>
-        <p>Nospiediet 'B', ja uz ekrāna ir burts O vai H.</p>
-        <p>Nospiediet 'N', ja uz ekrāna NAV neviena burta O vai H.</p>
+        <p>Piemēri, kur IR redzami O vai H burti.</p>
+        <img src="stimuli/Uo.png" width="80"> <img src="stimuli/Hs.png" width="80">
+        <p>Piemēri, kur NAV redzami O vai H burti.</p>
+        <img src="stimuli/St.png" width="80"> <img src="stimuli/Lu.png" width="80">
+        <p>Nospiediet '&rArr;', ja uz ekrāna IR burts O vai H.</p>
+        <p>Nospiediet '&lArr;', ja uz ekrāna NAV neviena burta O vai H.</p>
         <p>Sāciet, nospiežot taustiņu 'S'.</p>
     </div>
     <canvas id="gameCanvas" width="1000" height="600"></canvas>
@@ -68,7 +72,6 @@
         let trialStartTime = 0;
         let awaitingKey = true;
         let trialTimeoutHandle = null;
-        let testEnded = false;
 
         function loadImages() {
             for (let file of stimuliFiles) {
@@ -112,6 +115,8 @@
         async function startTask() {
             document.getElementById('instructions').style.display = 'none';
             downloadBtn.style.display = 'none';
+            drawTextLines(['Gatavojieties...']);
+            await countdownBeforeStart(3);
             const keys = Object.keys(images);
             trialData = [...keys, ...keys].slice(0, trialCount);
             shuffle(trialData);
@@ -120,6 +125,13 @@
             taskStarted = true;
             testEnded = false;
             runTrial();
+        }
+
+        async function countdownBeforeStart(seconds = 3) {
+            for (let i = seconds; i > 0; i--) {
+                drawTextLines([`Tests sākas pēc: ${i}`]);
+                await new Promise(res => setTimeout(res, 1000));
+            }
         }
 
         async function runTrial() {
@@ -150,6 +162,37 @@
             };
         }
 
+        function generateCSV(resultsArray) {
+            const id = localStorage.getItem('userId') || '';
+            const age = localStorage.getItem('userAge') || '';
+            const gender = localStorage.getItem('userGender') || '';
+            const hobbies = localStorage.getItem('userHobbies') || '';
+            const testStage = localStorage.getItem('testStage');
+            const currentTest = 'burti';
+            const firstTest = localStorage.getItem('firstTest');
+
+            let csv = 'ID,Vecums,Dzimums,Hobiji,Tests,Testa_kārta\n';
+            csv += `${id},${age},${gender},"${hobbies.replace(/"/g, '""')}",${currentTest},${testStage}\n\n`;
+            csv += 'Stimuls,Globāls,Lokāls,Reakcijas_laiks_ms,Pareizi\n';
+            resultsArray.forEach(r => {
+                csv += `${r.stimulus},${r.global},${r.local},${Math.round(r.reaction_time)},${r.correct}\n`;
+            });
+            return csv;
+        }
+
+        function uploadCSVToDrive(csvText) {
+            fetch("https://script.google.com/macros/s/AKfycbwdwX72Ja4RDdnEsWxXzmY0X7bo0PnisYaTwFp3q3uJAEatq8HsAn7OTjyYqfollKKJ/exec", {
+                method: "POST",
+                body: csvText,
+                headers: {
+                    "Content-Type": "text/plain"
+                }
+            })
+            .then(res => res.text())
+            .then(msg => console.log("Augšupielādes atbilde:", msg))
+            .catch(err => console.error("Augšupielādes kļūda:", err));
+        }
+
         function showResults() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             let gTimes = [], lTimes = [], nTimes = [];
@@ -172,23 +215,35 @@
                 return arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
             }
 
-            drawTextLines([
-                'Navona testa rezultāti:',
-                `Globāls līmenis: ${avg(gTimes)} ms, ${gErr} kļūdas`,
-                `Lokāls līmenis: ${avg(lTimes)} ms, ${lErr} kļūdas`,
-                `Nav mērķa: ${avg(nTimes)} ms, ${nErr} kļūdas`,
-                'Nospiediet atstarpes taustiņu, lai sāktu no jauna.'
-            ]);
+            const testStage = localStorage.getItem('testStage');
+            const csv = generateCSV(results);
+            uploadCSVToDrive(csv);
+
+            if (testStage === '1') {
+                localStorage.setItem('testStage', '2');
+                localStorage.setItem('readyForNextTest', 'true');
+                drawTextLines([
+                    'Pirmā testa rezultāti:',
+                    `Globāls līmenis: ${avg(gTimes)} ms, ${gErr} kļūdas`,
+                    `Lokāls līmenis: ${avg(lTimes)} ms, ${lErr} kļūdas`,
+                    `Nav mērķa: ${avg(nTimes)} ms, ${nErr} kļūdas`,
+                    'Nospiediet atstarpes taustiņu, lai turpinātu'
+                ]);
+            } else {
+                drawTextLines([
+                    'Abi testi pabeigti. Paldies!',
+                    `Globāls līmenis: ${avg(gTimes)} ms, ${gErr} kļūdas`,
+                    `Lokāls līmenis: ${avg(lTimes)} ms, ${lErr} kļūdas`,
+                    `Nav mērķa: ${avg(nTimes)} ms, ${nErr} kļūdas`
+                ]);
+            }
 
             downloadBtn.style.display = 'inline-block';
             testEnded = true;
         }
 
         function exportCSV() {
-            let csv = 'stimuls,global,local,reakcijas_laiks_ms,pareizi\n';
-            results.forEach(r => {
-                csv += `${r.stimulus},${r.global},${r.local},${Math.round(r.reaction_time)},${r.correct}\n`;
-            });
+            const csv = generateCSV(results);
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -204,15 +259,23 @@
             if (!taskStarted && e.key.toLowerCase() === 's') {
                 await startTask();
             } else if (testEnded && e.code === 'Space') {
-                window.location.href = "index.html";
-            } else if (taskStarted && awaitingKey && (e.key.toLowerCase() === 'b' || e.key.toLowerCase() === 'n')) {
+                const ready = localStorage.getItem('readyForNextTest');
+                if (ready === 'true') {
+                    localStorage.removeItem('readyForNextTest');
+                    const firstTest = localStorage.getItem('firstTest');
+                    const nextTest = (firstTest === 'burti') ? 'figuras' : 'burti';
+                    window.location.href = nextTest + '.html';
+                } else {
+                    window.location.href = "index.html";
+                }
+            } else if (taskStarted && awaitingKey && (e.code === 'ArrowRight' || e.code === 'ArrowLeft')) {
                 awaitingKey = false;
                 if (trialTimeoutHandle) clearTimeout(trialTimeoutHandle);
                 const rt = performance.now() - trialStartTime;
                 const stimulusName = trialData[currentTrial];
                 const { global, local } = getLevelFlags(stimulusName);
-                const correct = (e.key.toLowerCase() === 'b' && (global || local)) ||
-                                (e.key.toLowerCase() === 'n' && !global && !local);
+                const correct = (e.code === 'ArrowRight' && (global || local)) ||
+                                (e.code === 'ArrowLeft' && !global && !local);
                 results.push({ stimulus: stimulusName, global, local, reaction_time: rt, correct });
                 await showFeedback(correct ? 'correct' : 'wrong');
                 currentTrial++;

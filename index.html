@@ -1,62 +1,156 @@
 <!DOCTYPE html>
 <html lang="lv">
 <head>
-    <meta charset="UTF-8">
-    <title>Navona tests</title>
-    <style>
-        body {
-            background-color: black;
-            color: white;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 80vh;
-            text-align: center;
-        }
+  <meta charset="UTF-8">
+  <title>Tests - Sākums</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2em;
+    }
 
-        .description {
-            font-size: 22px;
-            max-width: 600px;
-            margin-bottom: 40px;
-            line-height: 1.6;
-        }
+    .form-container {
+      background-color: #111;
+      border-radius: 12px;
+      padding: 2em 3em;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    }
 
-        .button-container {
-            display: flex;
-            gap: 20px;
-        }
+    h1 {
+      text-align: center;
+      margin-bottom: 1em;
+      font-size: 1.5em;
+    }
 
-        a.button {
-            text-decoration: none;
-            background-color: white;
-            color: black;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            transition: background-color 0.3s, color 0.3s, transform 0.2s;
-        }
+    label {
+      display: block;
+      margin-top: 1em;
+      margin-bottom: 0.3em;
+    }
 
-        a.button:hover {
-            background-color: #444;
-            color: white;
-            transform: scale(1.05);
-        }
-    </style>
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 0.5em;
+      background-color: #222;
+      color: white;
+      border: 1px solid #555;
+      border-radius: 4px;
+    }
+
+    .checkbox-group {
+      margin-top: 0.5em;
+    }
+
+    .checkbox-group label {
+      display: block;
+      font-weight: normal;
+      margin-bottom: 0.3em;
+    }
+
+    input[type="checkbox"] {
+      margin-right: 0.5em;
+      accent-color: #00ccff;
+    }
+
+    button {
+      margin-top: 2em;
+      width: 100%;
+      padding: 0.8em;
+      font-size: 1em;
+      background-color: #00ccff;
+      color: black;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #0099cc;
+    }
+
+    .intro {
+        background-color: #181818;
+        border-left: 4px solid #00ccff;
+        padding: 1em;
+        margin-bottom: 1.5em;
+        font-size: 0.95em;
+        line-height: 1.5;
+        border-radius: 6px;
+    }
+
+  </style>
 </head>
 <body>
-    <div>
-        <p class="description">
-            Sveiki!<br>
-            Šis ir Navona tests. Zemāk izvēlies vienu no testiem: burti vai figūras. 
-            Katrs tests pārbaudīs tavu spēju uztvert informāciju dažādos veidos.
-        </p>
+  <div class="form-container">
+
+
+    <div class="intro">
+        <p>Sveiki! Mans vārds ir Artis, esmu ceturtā kursa students un sava bakalura darba pētnieciskās daļas izstrādes ietvaros, esmu izveidojis digitalizētu Navona testa versiju.</p>
+        <p>Šis tests ir paredzēts, lai novērtētu jūsu reakcijas laiku un uztveres spējas. Tas sastāv no diviem posmiem – katrs ar atšķirīgu uzdevumu.</p>
+        <p>No sākuma, lūdzu, aizpildiet zemāk esošo formu. Dati tiks izmantoti tikai to analīzei. Turpinot, jūs piekrītat savu datu izmantošanai pētnieciskos nolūkos.</p>
     </div>
-    <div class="button-container">
-        <a href="burti.html" class="button">Burti</a>
-        <a href="figuras.html" class="button">Figūras</a>
-    </div>
+    <form id="user-info-form">
+      <label for="age">Vecums:</label>
+      <input type="number" id="age" name="age" required>
+
+      <label for="gender">Dzimums:</label>
+      <select id="gender" name="gender" required>
+        <option value="">-- Izvēlies --</option>
+        <option value="vīrietis">Vīrietis</option>
+        <option value="sieviete">Sieviete</option>
+        <option value="cits">Cits</option>
+        <option value="nevēlos norādīt">Nevēlos norādīt</option>
+      </select>
+
+      <label for="hobbies">Hobiji:</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" name="hobbies[]" value="sports"> Sports</label>
+        <label><input type="checkbox" name="hobbies[]" value="music"> Mūzika</label>
+        <label><input type="checkbox" name="hobbies[]" value="reading"> Lasīšana</label>
+        <label><input type="checkbox" name="hobbies[]" value="gaming"> Videospēles</label>
+        <label><input type="checkbox" name="hobbies[]" value="cooking"> Kulinārija</label>
+        <label><input type="checkbox" name="hobbies[]" value="art"> Māksla</label>
+        <label><input type="checkbox" name="hobbies[]" value="crafts"> Rokdarbi </label>
+      </div>
+
+      <button type="submit">Sākt testu</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('user-info-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const age = document.getElementById('age').value;
+      const gender = document.getElementById('gender').value;
+      const hobbies = [];
+      document.querySelectorAll('input[name="hobbies[]"]:checked').forEach((checkbox) => {
+        hobbies.push(checkbox.value);
+      });
+
+      const id = Math.floor(Math.random() * 1000000);
+      localStorage.setItem('userId', id);
+      localStorage.setItem('userAge', age);
+      localStorage.setItem('userGender', gender);
+      localStorage.setItem('userHobbies', JSON.stringify(hobbies));
+
+      const firstTest = Math.random() < 0.5 ? 'burti' : 'figuras';
+      localStorage.setItem('firstTest', firstTest);
+      localStorage.setItem('testStage', '1');
+
+      window.location.href = firstTest + '.html';
+    });
+  </script>
 </body>
 </html>
