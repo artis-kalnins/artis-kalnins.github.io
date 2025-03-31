@@ -2,7 +2,7 @@
 <html lang="lv">
 <head>
     <meta charset="UTF-8">
-    <title>Navona tests</title>
+    <title>Figūras tests</title>
     <style>
         body {
             background-color: black;
@@ -11,6 +11,7 @@
             text-align: center;
             margin: 0;
             padding: 0;
+            overflow: hidden;
         }
         canvas {
             display: block;
@@ -18,7 +19,8 @@
             background-color: black;
         }
         #instructions {
-            padding: 20px;
+            padding-top: 80px;
+            font-size: 20px;
         }
         #downloadBtn {
             display: none;
@@ -30,15 +32,14 @@
 </head>
 <body>
     <div id="instructions">
-        <p>Sveiki! Šis ir Navona tests.</p>
-        <p>Jums jāidentificē, vai uz ekrāna ir redzams Trijstūris vai Aplis (liels vai mazs).</p>
-        <p>Piemēri, kur IR redzams Trijstūris vai Aplis.</p>
+        <p>Šis ir Navona tests.</p>
+        <p>Jums jāidentificē, vai uz ekrāna ir redzams trijstūris vai aplis (gan liels, gan mazs).</p>
+        <p>Piemēri, kur IR redzams trijstūris vai aplis.</p>
         <img src="stimuli-figuras/Tr.png" width="80"> <img src="stimuli-figuras/Ak.png" width="80">
-        <p>Piemēri, kur NAV redzams Trijstūris vai Aplis.</p>
+        <p>Piemēri, kur NAV redzams trijstūris vai aplis.</p>
         <img src="stimuli-figuras/Kr.png" width="80"> <img src="stimuli-figuras/Rk.png" width="80">
-        <p>Nospiediet '&rArr;', ja uz ekrāna IR Trijstūris vai Aplis.</p>
-        <p>Nospiediet '&lArr;', ja uz ekrāna NAV neviena Trijstūra vai Aplis</p>
-        <p>Sāciet, nospiežot taustiņu 'S'.</p>
+        <p>Nospiediet "&rArr;", ja uz ekrāna IR trijstūris vai aplis.</p>
+        <p>Nospiediet "&lArr;", ja uz ekrāna NAV neviena trijstūra vai aplis</p>
     </div>
     <canvas id="gameCanvas" width="1000" height="600"></canvas>
     <button id="downloadBtn">Lejupielādēt rezultātus (CSV)</button>
@@ -62,7 +63,7 @@
             "Ta.png", "Tk.png", "Tr.png", "Tt.png"
         ];
 
-        const trialCount = 10;
+        const trialCount = 1;
         const trialTimeout = 1500;
         let trialData = [];
         let images = {};
@@ -229,18 +230,21 @@
                     `Globāls līmenis: ${avg(gTimes)} ms, ${gErr} kļūdas`,
                     `Lokāls līmenis: ${avg(lTimes)} ms, ${lErr} kļūdas`,
                     `Nav mērķa: ${avg(nTimes)} ms, ${nErr} kļūdas`,
-                    'Nospiediet atstarpes taustiņu, lai turpinātu'
+                    '',
+                    'Nospiediet atstarpes taustiņu, lai turpinātu.'
                 ]);
             } else {
                 drawTextLines([
-                    'Abi testi pabeigti. Paldies!',
+                    'Otrā testa rezultāti:',
                     `Globāls līmenis: ${avg(gTimes)} ms, ${gErr} kļūdas`,
                     `Lokāls līmenis: ${avg(lTimes)} ms, ${lErr} kļūdas`,
-                    `Nav mērķa: ${avg(nTimes)} ms, ${nErr} kļūdas`
+                    `Nav mērķa: ${avg(nTimes)} ms, ${nErr} kļūdas`,
+                    '',
+                    'Abi testi ir pabeigti. Paldies par veltīto laiku!'
                 ]);
             }
 
-            downloadBtn.style.display = 'inline-block';
+            //downloadBtn.style.display = 'inline-block';
             testEnded = true;
         }
 
@@ -258,7 +262,7 @@
         }
 
         document.addEventListener('keydown', async (e) => {
-            if (!taskStarted && e.key.toLowerCase() === 's') {
+            if (!taskStarted && e.code === 'Space') {
                 await startTask();
             } else if (testEnded && e.code === 'Space') {
                 const ready = localStorage.getItem('readyForNextTest');
@@ -285,12 +289,12 @@
             }
         });
 
-        downloadBtn.addEventListener('click', exportCSV);
+        //downloadBtn.addEventListener('click', exportCSV);
 
         window.onload = () => {
             drawTextLines(['Ielādējas attēli...']);
             loadImages();
-            drawTextLines(['Spiediet "S", lai sāktu.']);
+            drawTextLines(['Spiediet atstarpes taustiņu, lai sāktu.']);
         };
     </script>
 </body>

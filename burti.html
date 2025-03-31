@@ -11,6 +11,7 @@
             text-align: center;
             margin: 0;
             padding: 0;
+            overflow: hidden;
         }
         canvas {
             display: block;
@@ -18,7 +19,8 @@
             background-color: black;
         }
         #instructions {
-            padding: 20px;
+            padding-top: 80px;
+            font-size: 20px;
         }
         #downloadBtn {
             display: none;
@@ -30,15 +32,14 @@
 </head>
 <body>
     <div id="instructions">
-        <p>Sveiki! Šis ir Navona tests.</p>
-        <p>Jums jāidentificē, vai uz ekrāna ir redzams burts O vai H (liels vai mazs).</p>
+        <p>Šis ir Navona tests.</p>
+        <p>Jums jāidentificē, vai uz ekrāna ir redzams burts O vai H (gan liels, gan mazs).</p>
         <p>Piemēri, kur IR redzami O vai H burti.</p>
-        <img src="stimuli/Uo.png" width="80"> <img src="stimuli/Hs.png" width="80">
+        <img src="stimuli/Uo.png" height="120"> <img src="stimuli/Hs.png" height="120">
         <p>Piemēri, kur NAV redzami O vai H burti.</p>
-        <img src="stimuli/St.png" width="80"> <img src="stimuli/Lu.png" width="80">
-        <p>Nospiediet '&rArr;', ja uz ekrāna IR burts O vai H.</p>
-        <p>Nospiediet '&lArr;', ja uz ekrāna NAV neviena burta O vai H.</p>
-        <p>Sāciet, nospiežot taustiņu 'S'.</p>
+        <img src="stimuli/St.png" height="120"> <img src="stimuli/Lu.png" height="120">
+        <p>Nospiediet "&rArr;", ja uz ekrāna IR burts O vai H.</p>
+        <p>Nospiediet "&lArr;", ja uz ekrāna NAV neviena burta O vai H.</p>
     </div>
     <canvas id="gameCanvas" width="1000" height="600"></canvas>
     <button id="downloadBtn">Lejupielādēt rezultātus (CSV)</button>
@@ -61,7 +62,7 @@
             "Th.png", "Ts.png", "Tt.png", "Ul.png", "Uo.png", "Uu.png"
         ];
 
-        const trialCount = 10;
+        const trialCount = 1;
         const trialTimeout = 1500;
         let trialData = [];
         let images = {};
@@ -227,18 +228,21 @@
                     `Globāls līmenis: ${avg(gTimes)} ms, ${gErr} kļūdas`,
                     `Lokāls līmenis: ${avg(lTimes)} ms, ${lErr} kļūdas`,
                     `Nav mērķa: ${avg(nTimes)} ms, ${nErr} kļūdas`,
-                    'Nospiediet atstarpes taustiņu, lai turpinātu'
+                    '',
+                    'Nospiediet atstarpes taustiņu, lai turpinātu.'
                 ]);
             } else {
                 drawTextLines([
-                    'Abi testi pabeigti. Paldies!',
+                    'Otrā testa rezultāti:',
                     `Globāls līmenis: ${avg(gTimes)} ms, ${gErr} kļūdas`,
                     `Lokāls līmenis: ${avg(lTimes)} ms, ${lErr} kļūdas`,
-                    `Nav mērķa: ${avg(nTimes)} ms, ${nErr} kļūdas`
+                    `Nav mērķa: ${avg(nTimes)} ms, ${nErr} kļūdas`,
+                    '',
+                    'Abi testi ir pabeigti. Paldies par veltīto laiku!'
                 ]);
             }
 
-            downloadBtn.style.display = 'inline-block';
+            //downloadBtn.style.display = 'inline-block';
             testEnded = true;
         }
 
@@ -256,7 +260,7 @@
         }
 
         document.addEventListener('keydown', async (e) => {
-            if (!taskStarted && e.key.toLowerCase() === 's') {
+            if (!taskStarted && e.code === 'Space') {
                 await startTask();
             } else if (testEnded && e.code === 'Space') {
                 const ready = localStorage.getItem('readyForNextTest');
@@ -283,12 +287,12 @@
             }
         });
 
-        downloadBtn.addEventListener('click', exportCSV);
+        //downloadBtn.addEventListener('click', exportCSV);
 
         window.onload = () => {
             drawTextLines(['Ielādējas attēli...']);
             loadImages();
-            drawTextLines(['Spiediet "S", lai sāktu.']);
+            drawTextLines(['Spiediet atstarpes taustiņu, lai sāktu.']);
         };
     </script>
 </body>

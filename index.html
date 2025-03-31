@@ -37,7 +37,20 @@
       margin-bottom: 0.3em;
     }
 
-    input[type="number"],
+    input[type="number"] {
+      width: 97%;
+      padding: 0.5em;
+      background-color: #222;
+      color: white;
+      border: 1px solid #555;
+      border-radius: 4px;
+    }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }   
+
     select {
       width: 100%;
       padding: 0.5em;
@@ -81,7 +94,7 @@
 
     .intro {
         background-color: #181818;
-        border-left: 4px solid #00ccff;
+        border-top: 4px solid #00ccff;
         padding: 1em;
         margin-bottom: 1.5em;
         font-size: 0.95em;
@@ -96,9 +109,10 @@
 
 
     <div class="intro">
-        <p>Sveiki! Mans vārds ir Artis, esmu ceturtā kursa students un sava bakalura darba pētnieciskās daļas izstrādes ietvaros, esmu izveidojis digitalizētu Navona testa versiju.</p>
-        <p>Šis tests ir paredzēts, lai novērtētu jūsu reakcijas laiku un uztveres spējas. Tas sastāv no diviem posmiem – katrs ar atšķirīgu uzdevumu.</p>
-        <p>No sākuma, lūdzu, aizpildiet zemāk esošo formu. Dati tiks izmantoti tikai to analīzei. Turpinot, jūs piekrītat savu datu izmantošanai pētnieciskos nolūkos.</p>
+        <p>Sveiki!</p> 
+        <p>Mans vārds ir Artis, esmu ceturtā kursa students Latvijas Universitātē un sava bakalura darba pētnieciskās daļas izstrādes ietvaros esmu izveidojis digitalizētu Navona testa versiju.</p>
+        <p>Šis tests ir paredzēts, lai novērtētu jūsu reakcijas laiku un uztveres spējas globālā un lokālā līmenī. Tas sastāv no diviem posmiem – katrs ar atšķirīgu uzdevumu.</p>
+        <p>No sākuma, lūdzu, aizpildiet zemāk esošo formu. Dati tiks izmantoti tikai to analīzei. Turpinot jūs piekrītat savu datu izmantošanai pētnieciskos nolūkos.</p>
     </div>
     <form id="user-info-form">
       <label for="age">Vecums:</label>
