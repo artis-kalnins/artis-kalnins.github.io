@@ -5,7 +5,7 @@
     <title>Burti tests</title>
     <style>
         body {
-            background-color: black;
+            background-color: #2f2f2f;
             color: white;
             font-family: sans-serif;
             text-align: center;
@@ -16,7 +16,7 @@
         canvas {
             display: block;
             margin: 0 auto;
-            background-color: black;
+            background-color: #2f2f2f;
         }
         #instructions {
             padding-top: 80px;
@@ -32,14 +32,13 @@
 </head>
 <body>
     <div id="instructions">
-        <p>Šis ir Navona tests.</p>
         <p>Jums jāidentificē, vai uz ekrāna ir redzams burts O vai H (gan liels, gan mazs).</p>
         <p>Piemēri, kur IR redzami O vai H burti.</p>
         <img src="stimuli/Uo.png" height="120"> <img src="stimuli/Hs.png" height="120">
         <p>Piemēri, kur NAV redzami O vai H burti.</p>
         <img src="stimuli/St.png" height="120"> <img src="stimuli/Lu.png" height="120">
-        <p>Nospiediet "&rArr;", ja uz ekrāna IR burts O vai H.</p>
-        <p>Nospiediet "&lArr;", ja uz ekrāna NAV neviena burta O vai H.</p>
+        <p>Nospiediet "→", ja uz ekrāna IR burts O vai H.</p>
+        <p>Nospiediet "←", ja uz ekrāna NAV neviena burta O vai H.</p>
     </div>
     <canvas id="gameCanvas" width="1000" height="600"></canvas>
     <button id="downloadBtn">Lejupielādēt rezultātus (CSV)</button>
@@ -62,7 +61,7 @@
             "Th.png", "Ts.png", "Tt.png", "Ul.png", "Uo.png", "Uu.png"
         ];
 
-        const trialCount = 30;
+        const trialCount = 3;
         const trialTimeout = 2000;
         let trialData = [];
         let images = {};
@@ -119,8 +118,8 @@
             drawTextLines(['Gatavojieties...']);
             await countdownBeforeStart(3);
             const keys = Object.keys(images);
-            trialData = [...keys, ...keys].slice(0, trialCount);
-            shuffle(trialData);
+            shuffle(keys);                           
+            trialData = keys.slice(0, trialCount);   
             currentTrial = 0;
             results = [];
             taskStarted = true;
@@ -196,81 +195,27 @@
 
         function showResults() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            let gTimes = [], lTimes = [], nTimes = [];
-            let gErr = 0, lErr = 0, nErr = 0;
-
-            results.forEach(res => {
-                if (res.global) {
-                    gTimes.push(res.reaction_time);
-                    if (!res.correct) gErr++;
-                } else if (res.local) {
-                    lTimes.push(res.reaction_time);
-                    if (!res.correct) lErr++;
-                } else {
-                    nTimes.push(res.reaction_time);
-                    if (!res.correct) nErr++;
-                }
-            });
-
-            function avg(arr) {
-                return arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
-            }
-
-            const testStage = localStorage.getItem('testStage');
+            ctx.fillStyle = 'white';
+            ctx.font = '24px sans-serif';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Tests pabeigts. Nospiediet atstarpes taustiņu, lai turpinātu.', 100, 300);
             const csv = generateCSV(results);
             uploadCSVToDrive(csv);
-
-            if (testStage === '1') {
-                localStorage.setItem('testStage', '2');
-                localStorage.setItem('readyForNextTest', 'true');
-                drawTextLines([
-                    'Pirmā testa rezultāti:',
-                    `Globāls līmenis: ${avg(gTimes)} ms, ${gErr} kļūdas`,
-                    `Lokāls līmenis: ${avg(lTimes)} ms, ${lErr} kļūdas`,
-                    `Nav mērķa: ${avg(nTimes)} ms, ${nErr} kļūdas`,
-                    '',
-                    'Nospiediet atstarpes taustiņu, lai turpinātu.'
-                ]);
-            } else {
-                drawTextLines([
-                    'Otrā testa rezultāti:',
-                    `Globāls līmenis: ${avg(gTimes)} ms, ${gErr} kļūdas`,
-                    `Lokāls līmenis: ${avg(lTimes)} ms, ${lErr} kļūdas`,
-                    `Nav mērķa: ${avg(nTimes)} ms, ${nErr} kļūdas`,
-                    '',
-                    'Abi testi ir pabeigti. Paldies par veltīto laiku!'
-                ]);
-            }
-
-            //downloadBtn.style.display = 'inline-block';
             testEnded = true;
-        }
-
-        function exportCSV() {
-            const csv = generateCSV(results);
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'navon_rezultati.csv');
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
 
         document.addEventListener('keydown', async (e) => {
             if (!taskStarted && e.code === 'Space') {
                 await startTask();
             } else if (testEnded && e.code === 'Space') {
-                const ready = localStorage.getItem('readyForNextTest');
-                if (ready === 'true') {
-                    localStorage.removeItem('readyForNextTest');
+                const testStage = localStorage.getItem('testStage');
+                if (testStage === '1') {
+                    localStorage.setItem('testStage', '2');
                     const firstTest = localStorage.getItem('firstTest');
-                    const nextTest = (firstTest === 'burti') ? 'figuras' : 'burti';
-                    window.location.href = nextTest + '.html';
+                    const nextTest = (firstTest === 'burti') ? 'figuras.html' : 'burti.html';
+                    window.location.href = nextTest;
                 } else {
-                    window.location.href = "index.html";
+                    window.location.href = "dati.html";
                 }
             } else if (taskStarted && awaitingKey && (e.code === 'ArrowRight' || e.code === 'ArrowLeft')) {
                 awaitingKey = false;
@@ -286,8 +231,6 @@
                 runTrial();
             }
         });
-
-        //downloadBtn.addEventListener('click', exportCSV);
 
         window.onload = () => {
             drawTextLines(['Ielādējas attēli...']);

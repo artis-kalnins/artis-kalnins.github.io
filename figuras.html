@@ -2,10 +2,10 @@
 <html lang="lv">
 <head>
     <meta charset="UTF-8">
-    <title>Figūras tests</title>
+    <title>Burti tests</title>
     <style>
         body {
-            background-color: black;
+            background-color: #2f2f2f;
             color: white;
             font-family: sans-serif;
             text-align: center;
@@ -16,7 +16,7 @@
         canvas {
             display: block;
             margin: 0 auto;
-            background-color: black;
+            background-color: #2f2f2f;
         }
         #instructions {
             padding-top: 80px;
@@ -63,7 +63,7 @@
             "Ta.png", "Tk.png", "Tr.png", "Tt.png"
         ];
 
-        const trialCount = 30;
+        const trialCount = 3;
         const trialTimeout = 2000;
         let trialData = [];
         let images = {};
@@ -120,8 +120,12 @@
             drawTextLines(['Gatavojieties...']);
             await countdownBeforeStart(3);
             const keys = Object.keys(images);
-            trialData = [...keys, ...keys].slice(0, trialCount);
-            shuffle(trialData);
+            let extended = [];
+            while (extended.length < trialCount) {
+                extended = extended.concat(keys);
+            }
+            shuffle(extended);
+            trialData = extended.slice(0, trialCount); 
             currentTrial = 0;
             results = [];
             taskStarted = true;
@@ -135,7 +139,6 @@
                 await new Promise(res => setTimeout(res, 1000));
             }
         }
-
 
         async function runTrial() {
             if (currentTrial >= trialCount) {
@@ -167,15 +170,12 @@
 
         function generateCSV(resultsArray) {
             const id = localStorage.getItem('userId') || '';
-            const age = localStorage.getItem('userAge') || '';
-            const gender = localStorage.getItem('userGender') || '';
-            const hobbies = localStorage.getItem('userHobbies') || '';
             const testStage = localStorage.getItem('testStage');
-            const currentTest = 'figuras';
+            const currentTest = 'figūras';
             const firstTest = localStorage.getItem('firstTest');
 
-            let csv = 'ID,Vecums,Dzimums,Hobiji,Tests,Testa_kārta\n';
-            csv += `${id},${age},${gender},"${hobbies.replace(/"/g, '""')}",${currentTest},${testStage}\n\n`;
+            let csv = 'ID,Tests,Testa_kārta\n';
+            csv += `${id},${currentTest},${testStage}\n\n`;
             csv += 'Stimuls,Globāls,Lokāls,Reakcijas_laiks_ms,Pareizi\n';
             resultsArray.forEach(r => {
                 csv += `${r.stimulus},${r.global},${r.local},${Math.round(r.reaction_time)},${r.correct}\n`;
@@ -198,81 +198,27 @@
 
         function showResults() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            let gTimes = [], lTimes = [], nTimes = [];
-            let gErr = 0, lErr = 0, nErr = 0;
-
-            results.forEach(res => {
-                if (res.global) {
-                    gTimes.push(res.reaction_time);
-                    if (!res.correct) gErr++;
-                } else if (res.local) {
-                    lTimes.push(res.reaction_time);
-                    if (!res.correct) lErr++;
-                } else {
-                    nTimes.push(res.reaction_time);
-                    if (!res.correct) nErr++;
-                }
-            });
-
-            function avg(arr) {
-                return arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
-            }
-
-            const testStage = localStorage.getItem('testStage');
+            ctx.fillStyle = 'white';
+            ctx.font = '24px sans-serif';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Tests pabeigts. Nospiediet atstarpes taustiņu, lai turpinātu.', 100, 300);
             const csv = generateCSV(results);
             uploadCSVToDrive(csv);
-
-            if (testStage === '1') {
-                localStorage.setItem('testStage', '2');
-                localStorage.setItem('readyForNextTest', 'true');
-                drawTextLines([
-                    'Pirmā testa rezultāti:',
-                    `Globāls līmenis: ${avg(gTimes)} ms, ${gErr} kļūdas`,
-                    `Lokāls līmenis: ${avg(lTimes)} ms, ${lErr} kļūdas`,
-                    `Nav mērķa: ${avg(nTimes)} ms, ${nErr} kļūdas`,
-                    '',
-                    'Nospiediet atstarpes taustiņu, lai turpinātu.'
-                ]);
-            } else {
-                drawTextLines([
-                    'Otrā testa rezultāti:',
-                    `Globāls līmenis: ${avg(gTimes)} ms, ${gErr} kļūdas`,
-                    `Lokāls līmenis: ${avg(lTimes)} ms, ${lErr} kļūdas`,
-                    `Nav mērķa: ${avg(nTimes)} ms, ${nErr} kļūdas`,
-                    '',
-                    'Abi testi ir pabeigti. Paldies par veltīto laiku!'
-                ]);
-            }
-
-            //downloadBtn.style.display = 'inline-block';
             testEnded = true;
-        }
-
-        function exportCSV() {
-            const csv = generateCSV(results);
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'navon_rezultati.csv');
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
 
         document.addEventListener('keydown', async (e) => {
             if (!taskStarted && e.code === 'Space') {
                 await startTask();
             } else if (testEnded && e.code === 'Space') {
-                const ready = localStorage.getItem('readyForNextTest');
-                if (ready === 'true') {
-                    localStorage.removeItem('readyForNextTest');
+                const testStage = localStorage.getItem('testStage');
+                if (testStage === '1') {
+                    localStorage.setItem('testStage', '2');
                     const firstTest = localStorage.getItem('firstTest');
-                    const nextTest = (firstTest === 'figuras') ? 'burti' : 'figuras';
-                    window.location.href = nextTest + '.html';
+                    const nextTest = (firstTest === 'figuras') ? 'burti.html' : 'figuras.html';
+                    window.location.href = nextTest;
                 } else {
-                    window.location.href = "index.html";
+                    window.location.href = "dati.html";
                 }
             } else if (taskStarted && awaitingKey && (e.code === 'ArrowRight' || e.code === 'ArrowLeft')) {
                 awaitingKey = false;
@@ -288,8 +234,6 @@
                 runTrial();
             }
         });
-
-        //downloadBtn.addEventListener('click', exportCSV);
 
         window.onload = () => {
             drawTextLines(['Ielādējas attēli...']);

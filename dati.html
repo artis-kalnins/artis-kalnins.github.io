@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+  <meta charset="UTF-8">
+  <title>Datu ievade</title>
+  <style>
+    body {
+      background-color: #2f2f2f;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 2em;
+    }
+    form {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #3c3c3c;
+      padding: 2em;
+      border-radius: 10px;
+    }
+    label {
+      display: block;
+      margin-top: 1em;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.5em;
+      font-size: 1em;
+      margin-top: 0.3em;
+      border-radius: 5px;
+      border: none;
+    }
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: auto auto;
+      justify-content: start;
+      row-gap: 0.5em;
+      column-gap: 1em;
+      text-align: left;
+      margin-top: 0.5em;
+    }
+    .checkbox-group label {
+      display: contents;
+    }
+    .checkbox-group span {
+      padding-left: 0.3em;
+    }
+    button {
+      background-color: #dcdcdc;
+      color: #222;
+      padding: 0.8em 2em;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #c0c0c0;
+    }
+    #confirmation {
+      display: none;
+      margin-top: 2em;
+      font-size: 1.3em;
+      color: lightgreen;
+    }
+  </style>
+</head>
+<body>
+  <form id="final-form">
+    <h1>Lūdzu aizpildiet papildinformāciju</h1>
+    <label for="gender">Dzimums:</label>
+    <select id="gender" name="gender" required>
+      <option value="">-- Izvēlies --</option>
+      <option value="vīrietis">Vīrietis</option>
+      <option value="sieviete">Sieviete</option>
+      <option value="cits">Cits un/vai nevēlos norādīt</option>
+    </select>
+    <label for="age">Vecuma grupa:</label>
+    <select id="age" name="age" required>
+      <option value="">-- Izvēlies --</option>
+      <option value="18-24">18-24 gadi</option>
+      <option value="25-34">25-34 gadi</option>
+      <option value="35-44">35-44 gadi</option>
+      <option value="45-54">45-54 gadi</option>
+      <option value="55+">55 un vairāk</option>
+    </select>
+
+
+
+    <label for="hand">Dominantā roka:</label>
+    <select id="hand" name="hand" required>
+      <option value="">-- Izvēlies --</option>
+      <option value="right">Labā</option>
+      <option value="left">kreisā</option>
+    </select>
+
+    <label for="hobbies">Hobiji:</label>
+    <div class="checkbox-group">
+      <label><input type="checkbox" name="hobbies[]" value="sports"><span>Sports</span></label>
+      <label><input type="checkbox" name="hobbies[]" value="music"><span>Mūzika</span></label>
+      <label><input type="checkbox" name="hobbies[]" value="reading"><span>Lasīšana</span></label>
+      <label><input type="checkbox" name="hobbies[]" value="gaming"><span>Videospēles</span></label>
+      <label><input type="checkbox" name="hobbies[]" value="cooking"><span>Kulinārija</span></label>
+      <label><input type="checkbox" name="hobbies[]" value="art"><span>Māksla</span></label>
+      <label><input type="checkbox" name="hobbies[]" value="crafts"><span>Rokdarbi</span></label>
+    </div>
+
+    <button type="submit">Nosūtīt</button>
+  </form>
+
+  <div id="confirmation">
+    <h2>Paldies par dalību pētījumā!</h2>
+  </div>
+
+  <script>
+    document.getElementById('final-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const id = localStorage.getItem('userId') || Math.floor(Math.random() * 1000000);
+      const age = document.getElementById('age').value;
+      const gender = document.getElementById('gender').value;
+      const hand = document.getElementById('hand').value;
+      const hobbies = [];
+      document.querySelectorAll('input[name="hobbies[]"]:checked').forEach(cb => hobbies.push(cb.value));
+
+      const csv = `ID,Vecums,Dzimums,Roka,Hobiji\n${id},${age},${gender},${hand},"${hobbies.join(", ")}"`;
+
+      fetch("https://script.google.com/macros/s/AKfycbwdwX72Ja4RDdnEsWxXzmY0X7bo0PnisYaTwFp3q3uJAEatq8HsAn7OTjyYqfollKKJ/exec", {
+        method: "POST",
+        body: csv,
+        headers: {
+          "Content-Type": "text/plain"
+        }
+      })
+      .then(msg => {
+        document.getElementById('final-form').style.display = 'none';
+        document.getElementById('confirmation').style.display = 'block';
+      })
+    });
+  </script>
+</body>
+</html>
