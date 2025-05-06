@@ -37,8 +37,8 @@
         <img src="stimuli/Uo.png" height="120"> <img src="stimuli/Hs.png" height="120">
         <p>Piemēri, kur NAV redzami O vai H burti.</p>
         <img src="stimuli/St.png" height="120"> <img src="stimuli/Lu.png" height="120">
-        <p>Nospiediet "→", ja uz ekrāna IR burts O vai H.</p>
-        <p>Nospiediet "←", ja uz ekrāna NAV neviena burta O vai H.</p>
+        <p>Nospiediet "&rArr;", ja uz ekrāna IR burts O vai H.</p>
+        <p>Nospiediet "&lArr;", ja uz ekrāna NAV neviena burta O vai H.</p>
     </div>
     <canvas id="gameCanvas" width="1000" height="600"></canvas>
     <button id="downloadBtn">Lejupielādēt rezultātus (CSV)</button>
@@ -61,7 +61,7 @@
             "Th.png", "Ts.png", "Tt.png", "Ul.png", "Uo.png", "Uu.png"
         ];
 
-        const trialCount = 3;
+        const trialCount = 30;
         const trialTimeout = 2000;
         let trialData = [];
         let images = {};
@@ -118,8 +118,12 @@
             drawTextLines(['Gatavojieties...']);
             await countdownBeforeStart(3);
             const keys = Object.keys(images);
-            shuffle(keys);                           
-            trialData = keys.slice(0, trialCount);   
+            let extended = [];
+            while (extended.length < trialCount) {
+                extended = extended.concat(keys);
+            }
+            shuffle(extended);
+            trialData = extended.slice(0, trialCount); 
             currentTrial = 0;
             results = [];
             taskStarted = true;
