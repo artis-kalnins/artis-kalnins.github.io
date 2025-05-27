@@ -119,6 +119,9 @@
   <script>
     document.getElementById('final-form').addEventListener('submit', function(e) {
       e.preventDefault();
+
+      document.getElementById('submit-btn').disabled = true;
+
       const id = localStorage.getItem('userId') || Math.floor(Math.random() * 1000000);
       const age = document.getElementById('age').value;
       const gender = document.getElementById('gender').value;
