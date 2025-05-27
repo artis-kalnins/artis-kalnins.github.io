@@ -104,10 +104,6 @@ def pilnais_apvienojums_safe(no_foldera):
 folder_path = r"X"
 final_df = pilnais_apvienojums_safe(folder_path)
 
-# Saglabā CSV
-final_df.to_csv("pilnais_apkopojums.csv", index=False, encoding="utf-8-sig")
-
-# Saglabā arī kā Excel
 final_df.to_excel("pilnais_apkopojums.xlsx", index=False)
 
-print("✅ Saglabāts kā 'pilnais_apkopojums.csv' un 'pilnais_apkopojums.xlsx'")
+print("Saglabāts veiksmīgi")
