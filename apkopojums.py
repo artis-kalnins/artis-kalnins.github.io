@@ -101,7 +101,7 @@ def pilnais_apvienojums_safe(no_foldera):
     final_df = pd.DataFrame(results)
     return final_df
 
-folder_path = r"I:\Macibas\8.semestris\bakis\datu_analize"
+folder_path = r"X"
 final_df = pilnais_apvienojums_safe(folder_path)
 
 # Saglabā CSV
